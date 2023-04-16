@@ -1,9 +1,12 @@
 services:
   gawk:
-    image: gawk-pgsql
-    entrypoint: /entrypoint.sh
+    build: .
+    entrypoint: /app/entrypoint.sh
     depends_on:
       - db
+    volumes:
+      - "./:/app"
+
   db:
     image: postgres:14
     volumes:

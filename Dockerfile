@@ -22,11 +22,8 @@ WORKDIR /gawk-pgsql/gawkextlib
 RUN ./build.sh lib
 RUN ./build.sh pgsql --with-libpq=/usr/include/postgresql
 
-# need apt packages "rapidjson-dev", "g++" for json extension
-# RUN ./build.sh json
-
-COPY entrypoint.sh /entrypoint.sh
-COPY testpgsql.awk /testpgsql.awk
+# COPY entrypoint.sh /entrypoint.sh
+# COPY testpgsql.awk /testpgsql.awk
 ENV AWKLIBPATH /usr/local/lib/gawk
 ENV LD_LIBRARY_PATH /usr/local/lib
 # ENTRYPOINT ["/entrypoint.sh"]

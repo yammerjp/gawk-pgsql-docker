@@ -2,4 +2,4 @@
 
 set -e
 
-AWKLIBPATH=/usr/local/lib/gawk awk -f /testpgsql.awk
+AWKLIBPATH=/usr/local/lib/gawk awk -f /app/testpgsql.awk
