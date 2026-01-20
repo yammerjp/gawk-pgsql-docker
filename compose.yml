@@ -1,18 +1,22 @@
 services:
   gawk:
     build: .
-    entrypoint: /app/entrypoint.sh
     depends_on:
       - db
+      - redis
     volumes:
       - "./:/app"
+    environment:
+      - PGHOST=db
+      - PGUSER=postgres
+      - PGPASSWORD=passw0rd
+      - PGDATABASE=postgres
 
   db:
-    image: postgres:14
-    volumes:
-      - db-store:/var/lib/postgresql/data
+    image: mirror.gcr.io/library/postgres:17
     environment:
       - POSTGRES_PASSWORD=passw0rd
       - POSTGRES_USER=postgres
-volumes:
-  db-store:
+
+  redis:
+    image: mirror.gcr.io/library/redis:7-alpine

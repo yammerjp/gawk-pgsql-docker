@@ -1,3 +1,26 @@
+# GD Extension gawk 5.x API Compatibility Patch
+#
+# This patch fixes compatibility issues between the GD extension and gawk 5.x API.
+#
+# Changes:
+# 1. Function signatures: Add API_FINFO_ARG macro to all extension functions
+#    - Old: do_gdImageXxx(int nargs, awk_value_t *result)
+#    - New: do_gdImageXxx(int nargs, awk_value_t *result API_FINFO_ARG)
+#
+# 2. Function table: Use API_FUNC macro for func_table initialization
+#    - Old: { "functionName", do_function, arg_count },
+#    - New: API_FUNC("functionName", do_function, arg_count)
+#
+# These macros (defined in gawkextlib's shared/common.h) provide backward
+# compatibility with gawk 4.x while supporting the new API in gawk 5.x.
+#
+# Affected functions (15 total):
+# - gdImageCreateFromFile, gdImageDestroy, gdImageCreateTrueColor
+# - gdImageCopyResampled, gdImagePngName, gdImageStringFT
+# - gdImageStringFTCircle, gdImageColorAllocate, gdImageFilledRectangle
+# - gdImageRectangle, gdImageSetAntiAliasedDontBlend, gdImageSetThickness
+# - gdImageSX, gdImageSY, gdImageCompare
+
 diff --git a/gd/gd.c b/gd/gd.c
 index 0367c63..4db3988 100644
 --- a/gd/gd.c
