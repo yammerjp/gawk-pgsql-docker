@@ -1,0 +1,178 @@
+diff --git a/gd/gd.c b/gd/gd.c
+index 0367c63..4db3988 100644
+--- a/gd/gd.c
++++ b/gd/gd.c
+@@ -82,7 +82,7 @@ img_handle(gdImagePtr im, char *handle, size_t handle_size)
+ /*  do_gdImageCreateFromFile --- provide dynamically loaded do_gdImageCreateFromFile() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCreateFromFile(int nargs, awk_value_t *result)
++do_gdImageCreateFromFile(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	awk_value_t fName;
+ 	gdImagePtr im;
+@@ -124,7 +124,7 @@ do_gdImageCreateFromFile(int nargs, awk_value_t *result)
+ /*  do_gdImageDestroy --- provide dynamically loaded do_gdImageDestroy() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageDestroy(int nargs, awk_value_t *result)
++do_gdImageDestroy(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	awk_value_t handle;
+ 
+@@ -148,7 +148,7 @@ do_gdImageDestroy(int nargs, awk_value_t *result)
+ /*  do_gdImageCreateTrueColor --- provide dynamically loaded do_gdImageCreateTrueColor() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCreateTrueColor(int nargs, awk_value_t *result)
++do_gdImageCreateTrueColor(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t sx, sy;
+@@ -181,7 +181,7 @@ void gdImageCopyResampled(gdImagePtr dst, gdImagePtr src,
+ /*  do_gdImageCopyResampled --- provide dynamically loaded do_gdImageCopyResampled() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCopyResampled(int nargs, awk_value_t *result)
++do_gdImageCopyResampled(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr dst, src;
+ 	awk_value_t n[8];
+@@ -223,7 +223,7 @@ do_gdImageCopyResampled(int nargs, awk_value_t *result)
+ /*  do_gdImagePngName --- provide dynamically loaded do_gdImagePngName() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImagePngName(int nargs, awk_value_t *result)
++do_gdImagePngName(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	awk_value_t fName;
+ 	gdImagePtr im;
+@@ -256,7 +256,7 @@ do_gdImagePngName(int nargs, awk_value_t *result)
+ // We return here "" if things are OK, or an error message otherwise !!!
+ 
+ static awk_value_t *
+-do_gdImageStringFT(int nargs, awk_value_t *result)
++do_gdImageStringFT(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int n;
+ 	const char *errStr;
+@@ -341,7 +341,7 @@ do_gdImageStringFT(int nargs, awk_value_t *result)
+ // We return here "" if things are OK, or an error message otherwise !!!
+ 
+ static awk_value_t *
+-do_gdImageStringFTCircle(int nargs, awk_value_t *result)
++do_gdImageStringFTCircle(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	const char * errStr;
+ 
+@@ -415,7 +415,7 @@ do_gdImageStringFTCircle(int nargs, awk_value_t *result)
+ /*  do_gdImageColorAllocate --- provide dynamically loaded do_gdImageColorAllocate() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageColorAllocate(int nargs, awk_value_t *result)
++do_gdImageColorAllocate(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t n[3];
+@@ -445,7 +445,7 @@ do_gdImageColorAllocate(int nargs, awk_value_t *result)
+ /*  do_gdImageFilledRectangle --- provide dynamically loaded do_gdImageFilledRectangle() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageFilledRectangle(int nargs, awk_value_t *result)
++do_gdImageFilledRectangle(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t n[5];
+@@ -481,7 +481,7 @@ do_gdImageFilledRectangle(int nargs, awk_value_t *result)
+ /*  do_gdImageRectangle --- provide dynamically loaded do_gdImageRectangle() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageRectangle(int nargs, awk_value_t *result)
++do_gdImageRectangle(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t n[5];
+@@ -515,7 +515,7 @@ do_gdImageRectangle(int nargs, awk_value_t *result)
+ /*  do_gdImageSetAntiAliasedDontBlend --- provide dynamically loaded do_gdImageSetAntiAliasedDontBlend() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSetAntiAliasedDontBlend(int nargs, awk_value_t *result)
++do_gdImageSetAntiAliasedDontBlend(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret = GD_OK;
+ 	gdImagePtr im;
+@@ -547,7 +547,7 @@ do_gdImageSetAntiAliasedDontBlend(int nargs, awk_value_t *result)
+ /*  do_gdImageSetThickness --- provide dynamically loaded do_gdImageSetThickness() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSetThickness(int nargs, awk_value_t *result)
++do_gdImageSetThickness(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret = GD_OK;
+ 	gdImagePtr im;
+@@ -574,7 +574,7 @@ do_gdImageSetThickness(int nargs, awk_value_t *result)
+ /*  do_gdImageSX --- provide dynamically loaded do_gdImageSX() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSX(int nargs, awk_value_t *result)
++do_gdImageSX(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret;
+ 	gdImagePtr im;
+@@ -596,7 +596,7 @@ do_gdImageSX(int nargs, awk_value_t *result)
+ /*  do_gdImageSY --- provide dynamically loaded do_gdImageSY() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSY(int nargs, awk_value_t *result)
++do_gdImageSY(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret;
+ 	gdImagePtr im;
+@@ -618,7 +618,7 @@ do_gdImageSY(int nargs, awk_value_t *result)
+ /*  do_gdImageCompare --- provide dynamically loaded do_gdImageCompare() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCompare(int nargs, awk_value_t *result)
++do_gdImageCompare(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im1, im2;
+ 	int ret;
+@@ -641,22 +641,22 @@ do_gdImageCompare(int nargs, awk_value_t *result)
+ }
+ 
+ static awk_ext_func_t func_table[] = {
+-	{ "gdImageCreateFromFile", do_gdImageCreateFromFile, 1 },
+-	{ "gdImageDestroy", do_gdImageDestroy, 1 },
+-	{ "gdImageCreateTrueColor", do_gdImageCreateTrueColor, 2 },
+-	{ "gdImageCopyResampled", do_gdImageCopyResampled, 10 },
+-	{ "gdImagePngName", do_gdImagePngName, 2 },
+-	{ "gdImageStringFT", do_gdImageStringFT, 9 },
+-	{ "gdImageStringFTCircle", do_gdImageStringFTCircle, 11 },
+-	{ "gdImageColorAllocate", do_gdImageColorAllocate, 4 },
+-
+-	{ "gdImageFilledRectangle", do_gdImageFilledRectangle, 6 },
+-	{ "gdImageRectangle", do_gdImageRectangle, 6 },
+-	{ "gdImageSetAntiAliasedDontBlend", do_gdImageSetAntiAliasedDontBlend, 3 },
+-	{ "gdImageSetThickness", do_gdImageSetThickness, 2 },
+-	{ "gdImageSX", do_gdImageSX, 1 },
+-	{ "gdImageSY", do_gdImageSY, 1 },
+-	{ "gdImageCompare", do_gdImageCompare, 2 },
++	API_FUNC("gdImageCreateFromFile", do_gdImageCreateFromFile, 1)
++	API_FUNC("gdImageDestroy", do_gdImageDestroy, 1)
++	API_FUNC("gdImageCreateTrueColor", do_gdImageCreateTrueColor, 2)
++	API_FUNC("gdImageCopyResampled", do_gdImageCopyResampled, 10)
++	API_FUNC("gdImagePngName", do_gdImagePngName, 2)
++	API_FUNC("gdImageStringFT", do_gdImageStringFT, 9)
++	API_FUNC("gdImageStringFTCircle", do_gdImageStringFTCircle, 11)
++	API_FUNC("gdImageColorAllocate", do_gdImageColorAllocate, 4)
++
++	API_FUNC("gdImageFilledRectangle", do_gdImageFilledRectangle, 6)
++	API_FUNC("gdImageRectangle", do_gdImageRectangle, 6)
++	API_FUNC("gdImageSetAntiAliasedDontBlend", do_gdImageSetAntiAliasedDontBlend, 3)
++	API_FUNC("gdImageSetThickness", do_gdImageSetThickness, 2)
++	API_FUNC("gdImageSX", do_gdImageSX, 1)
++	API_FUNC("gdImageSY", do_gdImageSY, 1)
++	API_FUNC("gdImageCompare", do_gdImageCompare, 2)
+ };
+ 
+ static awk_bool_t

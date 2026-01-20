@@ -1,0 +1,13 @@
+#!/bin/sh
+# gdlib-config wrapper script using pkg-config
+# This provides compatibility for tools expecting the gdlib-config command
+
+if [ "$1" = "--libs" ]; then
+  pkg-config --libs gdlib
+elif [ "$1" = "--cflags" ]; then
+  pkg-config --cflags gdlib
+elif [ "$1" = "--version" ]; then
+  pkg-config --modversion gdlib
+else
+  pkg-config "$@" gdlib
+fi

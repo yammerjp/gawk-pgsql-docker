@@ -16,19 +16,33 @@ RUN apt-get update -y && apt-get install -y \
   g++ \
   rapidjson-dev \
   libhiredis-dev \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+  libgd-dev \
+  pkg-config \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+# Install gdlib-config wrapper script
+COPY scripts/gdlib-config /usr/local/bin/gdlib-config
+RUN chmod +x /usr/local/bin/gdlib-config
 
 RUN git clone --depth 1 https://github.com/yammerjp/gawkextlib /gawk-pgsql/gawkextlib
 
 WORKDIR /gawk-pgsql/gawkextlib
+
 RUN ./build.sh lib
 RUN ./build.sh pgsql --with-libpq=/usr/include/postgresql
 RUN ./build.sh json
 RUN ./build.sh redis
 
+# Copy and apply patch for gd extension to fix gawk API compatibility
+COPY patches/gd_api_fix.patch /gawk-pgsql/gawkextlib/
+RUN cd gd && patch -p2 < ../gd_api_fix.patch
+
+# Build gd with build.sh (ldconfig is run before tests to ensure libraries are found)
+RUN ldconfig && ./build.sh gd
+
 # COPY entrypoint.sh /entrypoint.sh
 # COPY testpgsql.awk /testpgsql.awk
-ENV AWKLIBPATH /usr/local/lib/gawk
-ENV LD_LIBRARY_PATH /usr/local/lib
+ENV AWKLIBPATH=/usr/local/lib/gawk \
+    LD_LIBRARY_PATH=/usr/local/lib
 # ENTRYPOINT ["/entrypoint.sh"]
