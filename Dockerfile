@@ -34,9 +34,9 @@ RUN ./build.sh pgsql --with-libpq=/usr/include/postgresql
 RUN ./build.sh json
 RUN ./build.sh redis
 
-# Copy and apply patch for gd extension to fix gawk API compatibility
-COPY patches/gd_api_fix.patch /gawk-pgsql/gawkextlib/
-RUN cd gd && patch -p2 < ../gd_api_fix.patch
+# Copy and apply patch for gd extension (API compatibility + circular crop feature)
+COPY patches/gd_circular_crop.patch /gawk-pgsql/gawkextlib/
+RUN cd gd && patch -p2 < ../gd_circular_crop.patch
 
 # Build gd with build.sh (ldconfig is run before tests to ensure libraries are found)
 RUN ldconfig && ./build.sh gd

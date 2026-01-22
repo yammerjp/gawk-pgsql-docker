@@ -1,0 +1,344 @@
+# GD Extension gawk 5.x API Compatibility + Circular Crop Feature Patch
+#
+# This patch includes:
+# 1. gawk 5.x API compatibility fixes (API_FINFO_ARG, API_FUNC macros)
+# 2. New gdImageCircularCrop function for circular image cropping
+#
+# Usage:
+#   cropped = gdImageCircularCrop(src, center_x, center_y, radius)
+#   - src: Source image handle
+#   - center_x, center_y: Center coordinates of the crop circle
+#   - radius: Radius of the crop circle
+#   - Returns: New image handle (2*radius x 2*radius) with transparent background
+#
+
+diff --git a/gd/gd.c b/gd/gd.c
+--- a/gd/gd.c
++++ b/gd/gd.c
+@@ -14,6 +14,7 @@
+ 
+ #include "common.h"
+ #include <gd.h>
++#include <math.h>
+ 
+ #define GD_NOK (-1)
+ #define GD_OK  (0)
+@@ -82,7 +83,7 @@
+ /*  do_gdImageCreateFromFile --- provide dynamically loaded do_gdImageCreateFromFile() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCreateFromFile(int nargs, awk_value_t *result)
++do_gdImageCreateFromFile(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	awk_value_t fName;
+ 	gdImagePtr im;
+@@ -124,7 +125,7 @@
+ /*  do_gdImageDestroy --- provide dynamically loaded do_gdImageDestroy() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageDestroy(int nargs, awk_value_t *result)
++do_gdImageDestroy(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	awk_value_t handle;
+ 
+@@ -148,7 +149,7 @@
+ /*  do_gdImageCreateTrueColor --- provide dynamically loaded do_gdImageCreateTrueColor() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCreateTrueColor(int nargs, awk_value_t *result)
++do_gdImageCreateTrueColor(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t sx, sy;
+@@ -181,7 +182,7 @@
+ /*  do_gdImageCopyResampled --- provide dynamically loaded do_gdImageCopyResampled() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCopyResampled(int nargs, awk_value_t *result)
++do_gdImageCopyResampled(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr dst, src;
+ 	awk_value_t n[8];
+@@ -223,7 +224,7 @@
+ /*  do_gdImagePngName --- provide dynamically loaded do_gdImagePngName() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImagePngName(int nargs, awk_value_t *result)
++do_gdImagePngName(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	awk_value_t fName;
+ 	gdImagePtr im;
+@@ -256,7 +257,7 @@
+ // We return here "" if things are OK, or an error message otherwise !!!
+ 
+ static awk_value_t *
+-do_gdImageStringFT(int nargs, awk_value_t *result)
++do_gdImageStringFT(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int n;
+ 	const char *errStr;
+@@ -341,7 +342,7 @@
+ // We return here "" if things are OK, or an error message otherwise !!!
+ 
+ static awk_value_t *
+-do_gdImageStringFTCircle(int nargs, awk_value_t *result)
++do_gdImageStringFTCircle(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	const char * errStr;
+ 
+@@ -366,7 +367,7 @@
+ 		set_ERRNO(_("gdImageStringFTCircle first argument must be empty or an image handle"));
+ 		return make_string_malloc("unknown image handle", 20, result);
+ 	}
+-    
++
+ 	str_len = string.str_value.len;
+ 
+ 	if (!str_len) { /* empty AWK strings mean NULL img pointers in GD */
+@@ -401,8 +402,8 @@
+ 
+ #undef GETARG
+ 
+-	errStr = gdImageStringFTCircle(im, x.num_value, y.num_value, radius.num_value, textRadius.num_value, 
+-		fillPortion.num_value, fontName.str_value.str, ptsize.num_value, 
++	errStr = gdImageStringFTCircle(im, x.num_value, y.num_value, radius.num_value, textRadius.num_value,
++		fillPortion.num_value, fontName.str_value.str, ptsize.num_value,
+ 		stringTop.str_value.str, stringBottom.str_value.str, fg.num_value);
+ 	if (!(errStr))
+ 		errStr="";
+@@ -415,7 +416,7 @@
+ /*  do_gdImageColorAllocate --- provide dynamically loaded do_gdImageColorAllocate() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageColorAllocate(int nargs, awk_value_t *result)
++do_gdImageColorAllocate(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t n[3];
+@@ -445,7 +446,7 @@
+ /*  do_gdImageFilledRectangle --- provide dynamically loaded do_gdImageFilledRectangle() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageFilledRectangle(int nargs, awk_value_t *result)
++do_gdImageFilledRectangle(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t n[5];
+@@ -481,7 +482,7 @@
+ /*  do_gdImageRectangle --- provide dynamically loaded do_gdImageRectangle() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageRectangle(int nargs, awk_value_t *result)
++do_gdImageRectangle(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im;
+ 	awk_value_t n[5];
+@@ -515,7 +516,7 @@
+ /*  do_gdImageSetAntiAliasedDontBlend --- provide dynamically loaded do_gdImageSetAntiAliasedDontBlend() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSetAntiAliasedDontBlend(int nargs, awk_value_t *result)
++do_gdImageSetAntiAliasedDontBlend(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret = GD_OK;
+ 	gdImagePtr im;
+@@ -547,7 +548,7 @@
+ /*  do_gdImageSetThickness --- provide dynamically loaded do_gdImageSetThickness() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSetThickness(int nargs, awk_value_t *result)
++do_gdImageSetThickness(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret = GD_OK;
+ 	gdImagePtr im;
+@@ -574,7 +575,7 @@
+ /*  do_gdImageSX --- provide dynamically loaded do_gdImageSX() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSX(int nargs, awk_value_t *result)
++do_gdImageSX(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret;
+ 	gdImagePtr im;
+@@ -596,7 +597,7 @@
+ /*  do_gdImageSY --- provide dynamically loaded do_gdImageSY() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageSY(int nargs, awk_value_t *result)
++do_gdImageSY(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	int ret;
+ 	gdImagePtr im;
+@@ -618,7 +619,7 @@
+ /*  do_gdImageCompare --- provide dynamically loaded do_gdImageCompare() builtin for gawk */
+ 
+ static awk_value_t *
+-do_gdImageCompare(int nargs, awk_value_t *result)
++do_gdImageCompare(int nargs, awk_value_t *result API_FINFO_ARG)
+ {
+ 	gdImagePtr im1, im2;
+ 	int ret;
+@@ -640,23 +641,142 @@
+ 	return make_number(ret, result);
+ }
+ 
++/*
++ * gdImageCircularCrop - Crop image to a circular region
++ *
++ * Creates a new image containing only the circular region from the source image.
++ * Pixels outside the circle are fully transparent.
++ *
++ * Parameters:
++ *   src_handle: Source image handle
++ *   cx: X coordinate of circle center in source image
++ *   cy: Y coordinate of circle center in source image
++ *   radius: Radius of the circular crop region
++ *
++ * Returns:
++ *   Handle to new image (2*radius x 2*radius) with circular content
++ *   Empty string on error
++ */
++static awk_value_t *
++do_gdImageCircularCrop(int nargs, awk_value_t *result API_FINFO_ARG)
++{
++	gdImagePtr src, dst;
++	awk_value_t cx_arg, cy_arg, radius_arg;
++	int cx, cy, radius;
++	int dst_size;
++	int x, y;
++	int src_width, src_height;
++
++	if (do_lint && nargs != 4)
++		lintwarn(ext_id, _("gdImageCircularCrop: called with incorrect number of arguments"));
++
++	/* Get source image handle */
++	if (!(src = find_handle(gdimgs, 0))) {
++		set_ERRNO(_("gdImageCircularCrop called with unknown source image handle"));
++		RET_NULSTR;
++	}
++
++	/* Get center coordinates and radius */
++	if (!get_argument(1, AWK_NUMBER, &cx_arg)) {
++		set_ERRNO(_("gdImageCircularCrop: missing required center_x argument"));
++		RET_NULSTR;
++	}
++	if (!get_argument(2, AWK_NUMBER, &cy_arg)) {
++		set_ERRNO(_("gdImageCircularCrop: missing required center_y argument"));
++		RET_NULSTR;
++	}
++	if (!get_argument(3, AWK_NUMBER, &radius_arg)) {
++		set_ERRNO(_("gdImageCircularCrop: missing required radius argument"));
++		RET_NULSTR;
++	}
++
++	cx = (int)cx_arg.num_value;
++	cy = (int)cy_arg.num_value;
++	radius = (int)radius_arg.num_value;
++
++	/* Validate radius */
++	if (radius <= 0) {
++		set_ERRNO(_("gdImageCircularCrop: radius must be positive"));
++		RET_NULSTR;
++	}
++
++	src_width = gdImageSX(src);
++	src_height = gdImageSY(src);
++	dst_size = radius * 2;
++
++	/* Create destination image */
++	dst = gdImageCreateTrueColor(dst_size, dst_size);
++	if (!dst) {
++		set_ERRNO(_("gdImageCircularCrop: failed to create destination image"));
++		RET_NULSTR;
++	}
++
++	/* Enable alpha channel handling */
++	gdImageAlphaBlending(dst, 0);  /* Disable blending to allow direct alpha writes */
++	gdImageSaveAlpha(dst, 1);      /* Save alpha channel when writing to PNG */
++
++	/* Fill with fully transparent pixels */
++	{
++		int transparent = gdTrueColorAlpha(0, 0, 0, 127);  /* 127 = fully transparent in GD */
++		for (y = 0; y < dst_size; y++) {
++			for (x = 0; x < dst_size; x++) {
++				gdImageSetPixel(dst, x, y, transparent);
++			}
++		}
++	}
++
++	/* Copy pixels within the circle */
++	{
++		int radius_squared = radius * radius;
++		for (y = 0; y < dst_size; y++) {
++			for (x = 0; x < dst_size; x++) {
++				/* Calculate distance from center of destination image */
++				int dx = x - radius;
++				int dy = y - radius;
++				int dist_squared = dx * dx + dy * dy;
++
++				if (dist_squared <= radius_squared) {
++					/* Calculate corresponding position in source image */
++					int src_x = cx - radius + x;
++					int src_y = cy - radius + y;
++
++					/* Check bounds */
++					if (src_x >= 0 && src_x < src_width &&
++					    src_y >= 0 && src_y < src_height) {
++						int pixel = gdImageGetTrueColorPixel(src, src_x, src_y);
++						gdImageSetPixel(dst, x, y, pixel);
++					}
++				}
++			}
++		}
++	}
++
++	/* Return handle to new image */
++	{
++		char hdl[32];
++		size_t hlen = img_handle(dst, hdl, sizeof(hdl));
++		return make_string_malloc(hdl, hlen, result);
++	}
++}
++
+ static awk_ext_func_t func_table[] = {
+-	{ "gdImageCreateFromFile", do_gdImageCreateFromFile, 1 },
+-	{ "gdImageDestroy", do_gdImageDestroy, 1 },
+-	{ "gdImageCreateTrueColor", do_gdImageCreateTrueColor, 2 },
+-	{ "gdImageCopyResampled", do_gdImageCopyResampled, 10 },
+-	{ "gdImagePngName", do_gdImagePngName, 2 },
+-	{ "gdImageStringFT", do_gdImageStringFT, 9 },
+-	{ "gdImageStringFTCircle", do_gdImageStringFTCircle, 11 },
+-	{ "gdImageColorAllocate", do_gdImageColorAllocate, 4 },
+-
+-	{ "gdImageFilledRectangle", do_gdImageFilledRectangle, 6 },
+-	{ "gdImageRectangle", do_gdImageRectangle, 6 },
+-	{ "gdImageSetAntiAliasedDontBlend", do_gdImageSetAntiAliasedDontBlend, 3 },
+-	{ "gdImageSetThickness", do_gdImageSetThickness, 2 },
+-	{ "gdImageSX", do_gdImageSX, 1 },
+-	{ "gdImageSY", do_gdImageSY, 1 },
+-	{ "gdImageCompare", do_gdImageCompare, 2 },
++	API_FUNC("gdImageCreateFromFile", do_gdImageCreateFromFile, 1)
++	API_FUNC("gdImageDestroy", do_gdImageDestroy, 1)
++	API_FUNC("gdImageCreateTrueColor", do_gdImageCreateTrueColor, 2)
++	API_FUNC("gdImageCopyResampled", do_gdImageCopyResampled, 10)
++	API_FUNC("gdImagePngName", do_gdImagePngName, 2)
++	API_FUNC("gdImageStringFT", do_gdImageStringFT, 9)
++	API_FUNC("gdImageStringFTCircle", do_gdImageStringFTCircle, 11)
++	API_FUNC("gdImageColorAllocate", do_gdImageColorAllocate, 4)
++
++	API_FUNC("gdImageFilledRectangle", do_gdImageFilledRectangle, 6)
++	API_FUNC("gdImageRectangle", do_gdImageRectangle, 6)
++	API_FUNC("gdImageSetAntiAliasedDontBlend", do_gdImageSetAntiAliasedDontBlend, 3)
++	API_FUNC("gdImageSetThickness", do_gdImageSetThickness, 2)
++	API_FUNC("gdImageSX", do_gdImageSX, 1)
++	API_FUNC("gdImageSY", do_gdImageSY, 1)
++	API_FUNC("gdImageCompare", do_gdImageCompare, 2)
++	API_FUNC("gdImageCircularCrop", do_gdImageCircularCrop, 4)
+ };
+ 
+ static awk_bool_t
+@@ -672,4 +792,3 @@
+ static const char ext_version[] = PACKAGE_STRING;
+ 
+ dl_load_func(func_table, gd, "")
+-
