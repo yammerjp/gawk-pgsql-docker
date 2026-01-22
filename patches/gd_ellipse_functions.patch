@@ -1,0 +1,162 @@
+# GD Extension - Add Ellipse/Circle Drawing and Cropping Functions
+#
+# This patch adds three new functions to the GD extension:
+# 1. gdImageFilledEllipse - Draw a filled ellipse/circle
+# 2. gdImageEllipse - Draw an ellipse/circle outline
+# 3. gdImageCircleCrop - Crop image to circular shape (makes outside transparent)
+#
+# Functions 1-2 use the same pattern as existing rectangle functions.
+# Function 3 crops an image to a circular shape by making pixels outside
+# the specified circle transparent (requires PNG format to preserve alpha).
+#
+# All functions are compatible with gawk 5.x API.
+#
+# This patch should be applied AFTER gd_api_fix.patch
+
+--- a/gd/gd.c	2026-01-22 23:47:46.800559616 +0000
++++ b/gd/gd.c	2026-01-22 23:47:46.806559031 +0000
+@@ -511,6 +511,134 @@
+ 	RETURN_OK;
+ }
+ 
++
++/*  do_gdImageFilledEllipse --- provide dynamically loaded do_gdImageFilledEllipse() builtin for gawk */
++
++static awk_value_t *
++do_gdImageFilledEllipse(int nargs, awk_value_t *result API_FINFO_ARG)
++{
++	gdImagePtr im;
++	awk_value_t n[5];
++	size_t i;
++
++	if (do_lint && nargs != 6)
++		lintwarn(ext_id, _("do_gdImageFilledEllipse: called with incorrect number of arguments"));
++
++	if (!(im = find_handle(gdimgs, 0))) {
++		set_ERRNO(_("gdImageFilledEllipse called with unknown image handle"));
++		RETURN_NOK;
++	}
++
++	for (i = 0; i < sizeof(n)/sizeof(n[0]); i++) {
++		if (!get_argument(1+i, AWK_NUMBER, &n[i])) {
++			char emsg[512];
++			snprintf(emsg, sizeof(emsg), _("%s missing required numeric argument #%zu"), __func__+3, i+2);
++			set_ERRNO(emsg);
++			RETURN_NOK;
++		}
++	}
++
++	gdImageFilledEllipse(im,
++			     n[0].num_value,
++			     n[1].num_value,
++			     n[2].num_value,
++			     n[3].num_value,
++			     n[4].num_value);
++	RETURN_OK;
++}
++
++/*  do_gdImageEllipse --- provide dynamically loaded do_gdImageEllipse() builtin for gawk */
++
++static awk_value_t *
++do_gdImageEllipse(int nargs, awk_value_t *result API_FINFO_ARG)
++{
++	gdImagePtr im;
++	awk_value_t n[5];
++	size_t i;
++
++	if (do_lint && nargs != 6)
++		lintwarn(ext_id, _("do_gdImageEllipse: called with incorrect number of arguments"));
++
++	if (!(im = find_handle(gdimgs, 0))) {
++		set_ERRNO(_("gdImageEllipse called with unknown image handle"));
++		RETURN_NOK;
++	}
++
++	for (i = 0; i < sizeof(n)/sizeof(n[0]); i++) {
++		if (!get_argument(1+i, AWK_NUMBER, &n[i])) {
++			char emsg[512];
++			snprintf(emsg, sizeof(emsg), _("%s missing required numeric argument #%zu"), __func__+3, i+2);
++			set_ERRNO(emsg);
++			RETURN_NOK;
++		}
++	}
++
++	gdImageEllipse(im,
++		       n[0].num_value,
++		       n[1].num_value,
++		       n[2].num_value,
++		       n[3].num_value,
++		       n[4].num_value);
++	RETURN_OK;
++}
++
++/*  do_gdImageCircleCrop --- crop image to circular shape */
++
++static awk_value_t *
++do_gdImageCircleCrop(int nargs, awk_value_t *result API_FINFO_ARG)
++{
++	gdImagePtr im;
++	awk_value_t n[3];
++	int cx, cy, diameter, radius;
++	int x, y, dx, dy, dist_sq;
++	int transparent;
++	int width, height;
++
++	if (do_lint && nargs != 4)
++		lintwarn(ext_id, _("do_gdImageCircleCrop: called with incorrect number of arguments"));
++
++	if (!(im = find_handle(gdimgs, 0))) {
++		set_ERRNO(_("gdImageCircleCrop called with unknown image handle"));
++		RETURN_NOK;
++	}
++
++	if (!get_argument(1, AWK_NUMBER, &n[0]) ||
++	    !get_argument(2, AWK_NUMBER, &n[1]) ||
++	    !get_argument(3, AWK_NUMBER, &n[2])) {
++		set_ERRNO(_("gdImageCircleCrop missing required arguments"));
++		RETURN_NOK;
++	}
++
++	cx = n[0].num_value;
++	cy = n[1].num_value;
++	diameter = n[2].num_value;
++	radius = diameter / 2;
++
++	/* Enable alpha channel */
++	gdImageSaveAlpha(im, 1);
++	gdImageAlphaBlending(im, 0);
++
++	/* Allocate transparent color */
++	transparent = gdImageColorAllocateAlpha(im, 0, 0, 0, 127);
++
++	/* Get image dimensions */
++	width = gdImageSX(im);
++	height = gdImageSY(im);
++
++	/* Make pixels outside the circle transparent */
++	for (y = 0; y < height; y++) {
++		for (x = 0; x < width; x++) {
++			dx = x - cx;
++			dy = y - cy;
++			dist_sq = dx * dx + dy * dy;
++			if (dist_sq > radius * radius) {
++				gdImageSetPixel(im, x, y, transparent);
++			}
++		}
++	}
++
++	RETURN_OK;
++}
+ /* void gdImageSetAntiAliasedDontBlend(gdImagePtr im, int c, int dont_blend)  */
+ /*  do_gdImageSetAntiAliasedDontBlend --- provide dynamically loaded do_gdImageSetAntiAliasedDontBlend() builtin for gawk */
+ 
+@@ -652,6 +780,9 @@
+ 
+ 	API_FUNC("gdImageFilledRectangle", do_gdImageFilledRectangle, 6)
+ 	API_FUNC("gdImageRectangle", do_gdImageRectangle, 6)
++	API_FUNC("gdImageFilledEllipse", do_gdImageFilledEllipse, 6)
++	API_FUNC("gdImageEllipse", do_gdImageEllipse, 6)
++	API_FUNC("gdImageCircleCrop", do_gdImageCircleCrop, 4)
+ 	API_FUNC("gdImageSetAntiAliasedDontBlend", do_gdImageSetAntiAliasedDontBlend, 3)
+ 	API_FUNC("gdImageSetThickness", do_gdImageSetThickness, 2)
+ 	API_FUNC("gdImageSX", do_gdImageSX, 1)
